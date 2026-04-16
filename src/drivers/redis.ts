@@ -17,18 +17,44 @@ function getClient(key: string, config: ConnectionConfig): Redis {
   return clients.get(key)!;
 }
 
-const ALLOWED_COMMANDS = new Set([
+const READ_COMMANDS = new Set([
   "ping",
   "get", "mget", "hget", "hgetall", "hmget", "hkeys", "hvals", "hlen",
-  "lrange", "llen", "scard", "smembers", "sismember",
+  "lrange", "llen", "lindex",
+  "scard", "smembers", "sismember",
   "zrange", "zrangebyscore", "zcard", "zscore",
   "keys", "type", "ttl", "pttl", "exists", "dbsize", "info", "scan",
 ]);
 
+const WRITE_COMMANDS = new Set([
+  "set", "mset", "setnx", "setex", "psetex", "getset", "incr", "incrby", "incrbyfloat", "decr", "decrby", "append",
+  "hset", "hsetnx", "hmset", "hdel", "hincrby", "hincrbyfloat",
+  "lpush", "rpush", "lpop", "rpop", "lset", "lrem", "ltrim",
+  "sadd", "srem", "spop",
+  "zadd", "zrem", "zincrby",
+  "del", "unlink", "expire", "expireat", "pexpire", "persist", "rename",
+]);
+
+// Always blocked — destructive operations
+const DANGEROUS_COMMANDS = new Set([
+  "flushdb", "flushall", "shutdown", "debug", "config", "slaveof", "replicaof",
+]);
+
 export async function queryRedis(key: string, config: ConnectionConfig, command: string, args: string[]): Promise<QueryResult> {
   const cmd = command.toLowerCase();
-  if (!ALLOWED_COMMANDS.has(cmd)) {
-    throw new Error(`Redis command "${command}" is not allowed. Only read commands are permitted.`);
+
+  if (DANGEROUS_COMMANDS.has(cmd)) {
+    throw new Error(`Redis command "${command}" is always blocked (destructive).`);
+  }
+
+  if (!config.allowWrite && !READ_COMMANDS.has(cmd)) {
+    throw new Error(
+      `Redis command "${command}" is not allowed in read-only mode. Set allowWrite: true in config to enable write commands.`
+    );
+  }
+
+  if (config.allowWrite && !READ_COMMANDS.has(cmd) && !WRITE_COMMANDS.has(cmd)) {
+    throw new Error(`Redis command "${command}" is not recognized. Check the command name.`);
   }
   const client = getClient(key, config);
   await client.connect().catch(() => {});

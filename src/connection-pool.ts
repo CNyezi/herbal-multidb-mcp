@@ -40,7 +40,8 @@ export async function execDescribeTable(poolKey: string, config: ConnectionConfi
 }
 
 export { queryRedis } from "./drivers/redis.js";
-export { queryMongo } from "./drivers/mongo.js";
+export { queryMongo, writeMongo } from "./drivers/mongo.js";
+export type { MongoWriteOp } from "./drivers/mongo.js";
 
 export async function closeAll(): Promise<void> {
   await Promise.all([

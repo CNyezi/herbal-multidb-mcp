@@ -33,6 +33,53 @@ export async function queryMongo(
   return { columns, rows: docs, rowCount: docs.length };
 }
 
+export type MongoWriteOp = "insertOne" | "updateOne" | "updateMany" | "deleteOne" | "deleteMany";
+
+export async function writeMongo(
+  key: string,
+  config: ConnectionConfig,
+  collection: string,
+  operation: MongoWriteOp,
+  args: { doc?: Record<string, unknown>; filter?: Record<string, unknown>; update?: Record<string, unknown> }
+): Promise<QueryResult> {
+  if (!config.allowWrite) {
+    throw new Error("Write operations require allowWrite: true in config.");
+  }
+  if (!config.database) throw new Error("MongoDB requires a database name");
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(collection)) {
+    throw new Error(`Invalid collection name: ${collection}`);
+  }
+  const client = getClient(key, config);
+  await client.connect();
+  const coll = client.db(config.database).collection(collection);
+
+  let result: Record<string, unknown>;
+  switch (operation) {
+    case "insertOne":
+      if (!args.doc) throw new Error("insertOne requires doc");
+      result = await coll.insertOne(args.doc) as unknown as Record<string, unknown>;
+      break;
+    case "updateOne":
+      if (!args.filter || !args.update) throw new Error("updateOne requires filter and update");
+      result = await coll.updateOne(args.filter, args.update) as unknown as Record<string, unknown>;
+      break;
+    case "updateMany":
+      if (!args.filter || !args.update) throw new Error("updateMany requires filter and update");
+      result = await coll.updateMany(args.filter, args.update) as unknown as Record<string, unknown>;
+      break;
+    case "deleteOne":
+      if (!args.filter) throw new Error("deleteOne requires filter");
+      result = await coll.deleteOne(args.filter) as unknown as Record<string, unknown>;
+      break;
+    case "deleteMany":
+      if (!args.filter) throw new Error("deleteMany requires filter");
+      result = await coll.deleteMany(args.filter) as unknown as Record<string, unknown>;
+      break;
+  }
+
+  return { columns: Object.keys(result), rows: [result], rowCount: 1 };
+}
+
 export async function listCollectionsMongo(key: string, config: ConnectionConfig): Promise<string[]> {
   if (!config.database) throw new Error("MongoDB requires a database name");
   const client = getClient(key, config);

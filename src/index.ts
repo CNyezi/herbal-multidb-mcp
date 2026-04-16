@@ -10,8 +10,10 @@ import {
   execDescribeTable,
   queryRedis,
   queryMongo,
+  writeMongo,
   closeAll,
 } from "./connection-pool.js";
+import type { MongoWriteOp } from "./connection-pool.js";
 import type { DbMcpConfig, ProjectConfig, ConnectionConfig } from "./types.js";
 
 const config: DbMcpConfig = loadConfig();
@@ -85,7 +87,8 @@ const server = new McpServer(
       `  - DROP and TRUNCATE are always blocked, even with allowWrite.`,
       `  - Multi-statement SQL is always blocked.`,
       ``,
-      `Redis only allows read commands (GET, HGETALL, KEYS, PING, etc).`,
+      `Redis: read-only by default (GET, HGETALL, KEYS, PING, etc). With allowWrite: true, also allows SET, DEL, HSET, etc. FLUSHDB/FLUSHALL always blocked.`,
+      `MongoDB: read-only (find) by default. With allowWrite: true, use mongo_write tool for insertOne/updateOne/updateMany/deleteOne/deleteMany.`,
     ].join("\n"),
   },
 );
@@ -257,6 +260,42 @@ server.tool(
       const result = await queryMongo(key, connCfg, collection, filterObj, {
         limit: limit ?? 100,
       });
+      return ok(JSON.stringify(result, null, 2));
+    } catch (e) {
+      return err((e as Error).message);
+    }
+  }
+);
+
+// 8. mongo_write — write operations on MongoDB (requires allowWrite)
+const VALID_MONGO_OPS = new Set(["insertOne", "updateOne", "updateMany", "deleteOne", "deleteMany"]);
+server.tool(
+  "mongo_write",
+  "Write to a MongoDB collection (requires allowWrite: true in config). Operations: insertOne, updateOne, updateMany, deleteOne, deleteMany",
+  {
+    connection: z.string(),
+    collection: z.string(),
+    operation: z.string().describe("One of: insertOne, updateOne, updateMany, deleteOne, deleteMany"),
+    doc: z.string().optional().describe("JSON document for insertOne"),
+    filter: z.string().optional().describe("JSON filter for update/delete operations"),
+    update: z.string().optional().describe("JSON update expression for updateOne/updateMany"),
+    project: z.string().optional(),
+  },
+  async ({ connection, collection, operation, doc, filter, update, project }) => {
+    try {
+      if (!VALID_MONGO_OPS.has(operation)) {
+        return err(`Invalid operation "${operation}". Must be one of: ${[...VALID_MONGO_OPS].join(", ")}`);
+      }
+      const { name, project: proj } = getProject(project);
+      const { key, config: connCfg } = getConnection(proj, name, connection);
+      if (connCfg.type !== "mongo") {
+        return err(`Connection "${connection}" is type "${connCfg.type}", not "mongo".`);
+      }
+      const args: { doc?: Record<string, unknown>; filter?: Record<string, unknown>; update?: Record<string, unknown> } = {};
+      if (doc) args.doc = JSON.parse(doc);
+      if (filter) args.filter = JSON.parse(filter);
+      if (update) args.update = JSON.parse(update);
+      const result = await writeMongo(key, connCfg, collection, operation as MongoWriteOp, args);
       return ok(JSON.stringify(result, null, 2));
     } catch (e) {
       return err((e as Error).message);
