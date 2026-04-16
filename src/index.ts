@@ -62,10 +62,22 @@ function err(message: string) {
 
 // --- server ---
 
-const server = new McpServer({
-  name: "db-mcp",
-  version: "1.0.0",
-});
+const configPath = process.env.DB_MCP_CONFIG ?? `${process.env.HOME}/.config/db-mcp/config.yaml`;
+
+const server = new McpServer(
+  { name: "db-mcp", version: "1.0.0" },
+  {
+    instructions: [
+      `Database MCP server — read-only access to MySQL, PostgreSQL, Redis, MongoDB.`,
+      `Config file: ${configPath}`,
+      ``,
+      `Workflow: call list_projects first to see available projects and connections,`,
+      `then use the connection name in query / list_tables / describe_table / redis_query / mongo_query.`,
+      `SQL is validated — only SELECT, SHOW, DESCRIBE, EXPLAIN are allowed.`,
+      `Redis only allows read commands (GET, HGETALL, KEYS, PING, etc).`,
+    ].join("\n"),
+  },
+);
 
 // 1. list_projects — no params, returns all projects with their connections
 server.tool("list_projects", "List all configured projects and their connections", async () => {

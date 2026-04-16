@@ -18,6 +18,7 @@ function getClient(key: string, config: ConnectionConfig): Redis {
 }
 
 const ALLOWED_COMMANDS = new Set([
+  "ping",
   "get", "mget", "hget", "hgetall", "hmget", "hkeys", "hvals", "hlen",
   "lrange", "llen", "scard", "smembers", "sismember",
   "zrange", "zrangebyscore", "zcard", "zscore",
