@@ -32,11 +32,11 @@
     "cursor",
     "ai"
   ],
-  "author": "",
+  "author": "holtye",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/herbal-goodness/herbal-multidb-mcp"
+    "url": "https://github.com/CNyezi/herbal-multidb-mcp"
   },
   "packageManager": "pnpm@10.28.0",
   "dependencies": {

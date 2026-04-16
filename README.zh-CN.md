@@ -95,7 +95,7 @@ chmod 600 ~/.config/db-mcp/config.yaml
 ### 从源码安装（可选）
 
 ```bash
-git clone https://github.com/herbal-goodness/herbal-multidb-mcp
+git clone https://github.com/CNyezi/herbal-multidb-mcp
 cd herbal-multidb-mcp
 pnpm install && pnpm build
 ```

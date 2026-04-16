@@ -95,7 +95,7 @@ Other clients follow the same pattern — any MCP client that supports stdio tra
 ### From source (alternative)
 
 ```bash
-git clone https://github.com/herbal-goodness/herbal-multidb-mcp
+git clone https://github.com/CNyezi/herbal-multidb-mcp
 cd herbal-multidb-mcp
 pnpm install && pnpm build
 ```
