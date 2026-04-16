@@ -1,0 +1,33 @@
+# ~/.config/db-mcp/config.yaml
+# Database connections organized by project.
+# Secrets go in secrets.local.yaml (same structure, just the password fields).
+# Environment variables: ${VAR_NAME} or ${VAR_NAME:-default}
+
+projects:
+  myapp:
+    description: "My application platform"
+    workspaces:
+      - "${HOME}/workspace"
+      - "${HOME}/code/go/myapp-*"
+      - "${HOME}/code/node/myapp-*"
+      - "${HOME}/code/php/*"
+    connections:
+      main-db:
+        type: mysql
+        host: ${MYAPP_DB_HOST:-127.0.0.1}
+        port: 3306
+        database: myapp_db
+        user: readonly
+        password: ${MYAPP_DB_PASS}
+      log-db:
+        type: mysql
+        database: myapp_log
+        inherit: main-db
+      manage-db:
+        type: mysql
+        database: myapp_manage
+        inherit: main-db
+      cache:
+        type: redis
+        host: ${MYAPP_REDIS_HOST:-127.0.0.1}
+        port: 6379

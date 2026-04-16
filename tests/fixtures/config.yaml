@@ -1,0 +1,15 @@
+projects:
+  testproject:
+    description: "Test project"
+    workspaces: ["/tmp/test-workspace"]
+    connections:
+      main-db:
+        type: mysql
+        host: localhost
+        port: 3306
+        database: test_db
+        user: testuser
+      log-db:
+        type: mysql
+        database: test_log
+        inherit: main-db
