@@ -64,7 +64,7 @@ chmod 600 ~/.config/db-mcp/config.yaml
 
 ### 2. 注册到 MCP 客户端
 
-**Claude Code** — 添加到 `~/.claude/settings.json`：
+**Claude Code** — 添加到 `~/.claude.json`（用户级）或项目 `.claude/settings.json`：
 
 ```json
 {
