@@ -81,6 +81,8 @@ server.tool("list_projects", "List all configured projects and their connections
         host: conn.host,
         port: conn.port,
         database: conn.database ?? null,
+        description: conn.description ?? null,
+        readonly: conn.readonly ?? null,
       })),
     }));
     return ok(JSON.stringify(result, null, 2));
@@ -103,6 +105,8 @@ server.tool(
         host: conn.host,
         port: conn.port,
         database: conn.database ?? null,
+        description: conn.description ?? null,
+        readonly: conn.readonly ?? null,
       }));
       return ok(JSON.stringify({ project: name, connections }, null, 2));
     } catch (e) {

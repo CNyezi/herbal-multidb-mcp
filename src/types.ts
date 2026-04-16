@@ -8,6 +8,8 @@ export interface ConnectionConfig {
   user?: string;
   password?: string;
   inherit?: string; // inherit from another connection in same project
+  description?: string;
+  readonly?: boolean;
 }
 
 export interface ProjectConfig {
