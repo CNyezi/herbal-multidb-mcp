@@ -2,7 +2,9 @@
 
 [中文文档](./README.zh-CN.md)
 
-A multi-project database MCP server for Claude Code. Provides read-only access to MySQL, PostgreSQL, Redis, and MongoDB through a single, unified interface.
+A multi-project database MCP server. Provides read-only access to MySQL, PostgreSQL, Redis, and MongoDB through a single, unified interface.
+
+Works with any MCP-compatible client: Claude Code, Cursor, Windsurf, Cline, Continue, etc.
 
 ## Features
 
@@ -68,9 +70,9 @@ Protect the file:
 chmod 600 ~/.config/db-mcp/config.yaml
 ```
 
-### 3. Register in Claude Code
+### 3. Register in your MCP client
 
-Add to `~/.claude/settings.json`:
+**Claude Code** — add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -83,7 +85,20 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Restart Claude Code. Verify with `/mcp`.
+**Cursor** — add to `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "db": {
+      "command": "node",
+      "args": ["/path/to/db-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+Other clients follow the same pattern — point to the `dist/index.js` entry point via stdio transport.
 
 ## Config Reference
 

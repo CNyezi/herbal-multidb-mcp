@@ -68,7 +68,7 @@ const server = new McpServer(
   { name: "db-mcp", version: "1.0.0" },
   {
     instructions: [
-      `Database MCP server — read-only access to MySQL, PostgreSQL, Redis, MongoDB.`,
+      `Database MCP server (db-mcp) — read-only access to MySQL, PostgreSQL, Redis, MongoDB.`,
       `Config file: ${configPath}`,
       ``,
       `Workflow: call list_projects first to see available projects and connections,`,

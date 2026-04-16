@@ -2,7 +2,9 @@
 
 [English](./README.md)
 
-面向 Claude Code 的多项目数据库 MCP 服务器。通过统一接口提供 MySQL、PostgreSQL、Redis、MongoDB 的只读访问。
+多项目数据库 MCP 服务器。通过统一接口提供 MySQL、PostgreSQL、Redis、MongoDB 的只读访问。
+
+适用于所有支持 MCP 协议的客户端：Claude Code、Cursor、Windsurf、Cline、Continue 等。
 
 ## 特性
 
@@ -68,9 +70,9 @@ projects:
 chmod 600 ~/.config/db-mcp/config.yaml
 ```
 
-### 3. 注册到 Claude Code
+### 3. 注册到 MCP 客户端
 
-在 `~/.claude/settings.json` 的 `mcpServers` 中添加：
+**Claude Code** — 添加到 `~/.claude/settings.json`：
 
 ```json
 {
@@ -83,7 +85,20 @@ chmod 600 ~/.config/db-mcp/config.yaml
 }
 ```
 
-重启 Claude Code，用 `/mcp` 确认加载成功。
+**Cursor** — 添加到 `.cursor/mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "db": {
+      "command": "node",
+      "args": ["/path/to/db-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+其他客户端类似，通过 stdio 传输指向 `dist/index.js` 入口即可。
 
 ## 配置参考
 
