@@ -9,6 +9,7 @@ projects:
         port: 3306
         database: test_db
         user: testuser
+        password: secret123
       log-db:
         type: mysql
         database: test_log

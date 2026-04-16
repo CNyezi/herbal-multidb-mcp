@@ -24,31 +24,6 @@ function deepInterpolate(obj: unknown): unknown {
   return obj;
 }
 
-function deepMerge(
-  target: Record<string, unknown>,
-  source: Record<string, unknown>
-): Record<string, unknown> {
-  const result = { ...target };
-  for (const key of Object.keys(source)) {
-    if (
-      source[key] &&
-      typeof source[key] === "object" &&
-      !Array.isArray(source[key]) &&
-      target[key] &&
-      typeof target[key] === "object" &&
-      !Array.isArray(target[key])
-    ) {
-      result[key] = deepMerge(
-        target[key] as Record<string, unknown>,
-        source[key] as Record<string, unknown>
-      );
-    } else {
-      result[key] = source[key];
-    }
-  }
-  return result;
-}
-
 function resolveInherit(
   connections: Record<string, ConnectionConfig>
 ): Record<string, ConnectionConfig> {
@@ -77,10 +52,7 @@ function stripUndefined(
   ) as Record<string, unknown>;
 }
 
-export function loadConfig(
-  configPath?: string,
-  secretsPath?: string
-): DbMcpConfig {
+export function loadConfig(configPath?: string): DbMcpConfig {
   const cfgPath =
     configPath ?? `${process.env.HOME}/.config/db-mcp/config.yaml`;
   if (!existsSync(cfgPath)) {
@@ -91,20 +63,7 @@ export function loadConfig(
     unknown
   >;
 
-  const secPath =
-    secretsPath ?? `${process.env.HOME}/.config/db-mcp/secrets.local.yaml`;
-  let merged = raw;
-  if (existsSync(secPath)) {
-    const secrets = parseYaml(readFileSync(secPath, "utf-8")) as Record<
-      string,
-      unknown
-    > | null;
-    if (secrets) {
-      merged = deepMerge(raw, secrets);
-    }
-  }
-
-  const interpolated = deepInterpolate(merged) as DbMcpConfig;
+  const interpolated = deepInterpolate(raw) as DbMcpConfig;
 
   for (const project of Object.values(interpolated.projects)) {
     project.connections = resolveInherit(project.connections);

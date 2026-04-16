@@ -19,20 +19,14 @@ describe("interpolateEnv", () => {
 });
 
 describe("loadConfig", () => {
-  it("loads and merges config with secrets", () => {
-    const config = loadConfig(
-      "tests/fixtures/config.yaml",
-      "tests/fixtures/secrets.yaml"
-    );
+  it("loads config with password directly in file", () => {
+    const config = loadConfig("tests/fixtures/config.yaml");
     expect(config.projects.testproject).toBeDefined();
     expect(config.projects.testproject.connections["main-db"].password).toBe("secret123");
   });
 
   it("resolves inherit references", () => {
-    const config = loadConfig(
-      "tests/fixtures/config.yaml",
-      "tests/fixtures/secrets.yaml"
-    );
+    const config = loadConfig("tests/fixtures/config.yaml");
     const logDb = config.projects.testproject.connections["log-db"];
     expect(logDb.host).toBe("localhost");
     expect(logDb.database).toBe("test_log");

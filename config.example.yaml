@@ -1,7 +1,7 @@
 # ~/.config/db-mcp/config.yaml
 # Database connections organized by project.
-# Secrets go in secrets.local.yaml (same structure, just the password fields).
-# Environment variables: ${VAR_NAME} or ${VAR_NAME:-default}
+# Passwords can be written directly or via environment variables: ${VAR_NAME:-default}
+# chmod 600 this file to protect credentials.
 
 projects:
   myapp:
