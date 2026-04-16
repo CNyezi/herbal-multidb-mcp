@@ -66,4 +66,32 @@ describe("validateSql", () => {
     const result = validateSql("SELECT 1; DROP TABLE users");
     expect(result.ok).toBe(false);
   });
+
+  // allowWrite mode
+  it("allows INSERT when allowWrite is true", () => {
+    expect(validateSql("INSERT INTO users (name) VALUES ('test')", true)).toEqual({ ok: true });
+  });
+
+  it("allows UPDATE when allowWrite is true", () => {
+    expect(validateSql("UPDATE users SET name = 'test' WHERE id = 1", true)).toEqual({ ok: true });
+  });
+
+  it("allows DELETE when allowWrite is true", () => {
+    expect(validateSql("DELETE FROM users WHERE id = 1", true)).toEqual({ ok: true });
+  });
+
+  it("still blocks DROP even with allowWrite", () => {
+    const result = validateSql("DROP TABLE users", true);
+    expect(result.ok).toBe(false);
+  });
+
+  it("still blocks TRUNCATE even with allowWrite", () => {
+    const result = validateSql("TRUNCATE TABLE users", true);
+    expect(result.ok).toBe(false);
+  });
+
+  it("still blocks multi-statement even with allowWrite", () => {
+    const result = validateSql("INSERT INTO users (name) VALUES ('a'); DROP TABLE users", true);
+    expect(result.ok).toBe(false);
+  });
 });

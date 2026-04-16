@@ -1,22 +1,43 @@
 {
-  "name": "db-mcp",
-  "version": "1.0.0",
-  "description": "Multi-project database MCP server",
+  "name": "herbal-multidb-mcp",
+  "version": "0.1.0",
+  "description": "Multi-project database MCP server — MySQL, PostgreSQL, Redis, MongoDB with read-only protection",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "db-mcp": "dist/index.js"
+    "herbal-multidb-mcp": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "config.example.yaml",
+    "README.md",
+    "README.zh-CN.md"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "npx tsx src/index.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm test && pnpm build"
   },
-  "keywords": [],
+  "keywords": [
+    "mcp",
+    "database",
+    "mysql",
+    "postgresql",
+    "redis",
+    "mongodb",
+    "claude",
+    "cursor",
+    "ai"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/herbal-goodness/herbal-multidb-mcp"
+  },
   "packageManager": "pnpm@10.28.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

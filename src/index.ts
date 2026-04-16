@@ -65,15 +65,15 @@ function err(message: string) {
 const configPath = process.env.DB_MCP_CONFIG ?? `${process.env.HOME}/.config/db-mcp/config.yaml`;
 
 const server = new McpServer(
-  { name: "db-mcp", version: "1.0.0" },
+  { name: "herbal-multidb-mcp", version: "1.0.0" },
   {
     instructions: [
-      `Database MCP server (db-mcp) — read-only access to MySQL, PostgreSQL, Redis, MongoDB.`,
+      `Database MCP server (herbal-multidb-mcp) — read-only by default, supports MySQL, PostgreSQL, Redis, MongoDB.`,
       `Config file: ${configPath}`,
       ``,
       `Workflow: call list_projects first to see available projects and connections,`,
       `then use the connection name in query / list_tables / describe_table / redis_query / mongo_query.`,
-      `SQL is validated — only SELECT, SHOW, DESCRIBE, EXPLAIN are allowed.`,
+      `SQL is read-only by default (SELECT/SHOW/DESCRIBE/EXPLAIN). Connections with allowWrite: true also permit INSERT/UPDATE/DELETE (DROP/TRUNCATE always blocked).`,
       `Redis only allows read commands (GET, HGETALL, KEYS, PING, etc).`,
     ].join("\n"),
   },
@@ -137,12 +137,12 @@ server.tool(
   },
   async ({ connection, sql, project }) => {
     try {
-      const guard = validateSql(sql);
+      const { name, project: proj } = getProject(project);
+      const { key, config: connCfg } = getConnection(proj, name, connection);
+      const guard = validateSql(sql, connCfg.allowWrite);
       if (!guard.ok) {
         return err(`BLOCKED: ${guard.reason}`);
       }
-      const { name, project: proj } = getProject(project);
-      const { key, config: connCfg } = getConnection(proj, name, connection);
       const result = await execQuery(key, connCfg, sql);
       return ok(JSON.stringify(result, null, 2));
     } catch (e) {

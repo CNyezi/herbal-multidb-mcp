@@ -10,6 +10,7 @@ export interface ConnectionConfig {
   inherit?: string; // inherit from another connection in same project
   description?: string;
   readonly?: boolean;
+  allowWrite?: boolean; // default false — set true to allow INSERT/UPDATE/DELETE etc.
 }
 
 export interface ProjectConfig {
