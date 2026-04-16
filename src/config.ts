@@ -98,8 +98,10 @@ export function loadConfig(
     const secrets = parseYaml(readFileSync(secPath, "utf-8")) as Record<
       string,
       unknown
-    >;
-    merged = deepMerge(raw, secrets);
+    > | null;
+    if (secrets) {
+      merged = deepMerge(raw, secrets);
+    }
   }
 
   const interpolated = deepInterpolate(merged) as DbMcpConfig;

@@ -1,4 +1,5 @@
-import { Parser } from "node-sql-parser";
+import pkg from "node-sql-parser";
+const { Parser } = pkg;
 
 const ALLOWED_TYPES = new Set([
   "select",
