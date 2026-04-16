@@ -14,7 +14,7 @@ export interface ConnectionConfig {
 
 export interface ProjectConfig {
   description?: string;
-  workspaces: string[]; // glob patterns for CWD matching
+  workspaces?: string[]; // optional, reserved for future use
   connections: Record<string, ConnectionConfig>;
 }
 

@@ -3,7 +3,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { loadConfig } from "./config.js";
-import { resolveProject } from "./project-resolver.js";
 import { validateSql } from "./sql-guard.js";
 import {
   execQuery,
@@ -20,23 +19,23 @@ const config: DbMcpConfig = loadConfig();
 // --- helpers ---
 
 function getProject(projectName?: string): { name: string; project: ProjectConfig } {
+  const projectNames = Object.keys(config.projects);
   if (projectName) {
     const project = config.projects[projectName];
     if (!project) {
       throw new Error(
-        `Project "${projectName}" not found. Available: ${Object.keys(config.projects).join(", ")}`
+        `Project "${projectName}" not found. Available: ${projectNames.join(", ")}`
       );
     }
     return { name: projectName, project };
   }
-  const cwd = process.cwd();
-  const resolved = resolveProject(config, cwd);
-  if (!resolved) {
-    throw new Error(
-      `No project matches CWD "${cwd}". Specify project explicitly. Available: ${Object.keys(config.projects).join(", ")}`
-    );
+  if (projectNames.length === 1) {
+    const name = projectNames[0];
+    return { name, project: config.projects[name] };
   }
-  return { name: resolved, project: config.projects[resolved] };
+  throw new Error(
+    `Multiple projects configured. Please specify which one: ${projectNames.join(", ")}`
+  );
 }
 
 function getConnection(
