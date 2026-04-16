@@ -1,5 +1,7 @@
 # db-mcp
 
+[中文文档](./README.zh-CN.md)
+
 A multi-project database MCP server for Claude Code. Provides read-only access to MySQL, PostgreSQL, Redis, and MongoDB through a single, unified interface.
 
 ## Features
@@ -113,59 +115,3 @@ Environment variables are interpolated at load time:
 - Redis only allows read commands (`GET`, `HGETALL`, `KEYS`, `PING`, etc.)
 - MongoDB queries are read-only (`find` only)
 - Table/collection names are validated against `[a-zA-Z_][a-zA-Z0-9_]*`
-
----
-
-# db-mcp（中文）
-
-面向 Claude Code 的多项目数据库 MCP 服务器。通过统一接口提供 MySQL、PostgreSQL、Redis、MongoDB 的只读访问。
-
-## 特性
-
-- **多项目管理** — 按项目组织数据库连接；仅一个项目时自动选中
-- **只读保护** — 通过 AST 解析验证 SQL，仅允许 `SELECT`、`SHOW`、`DESCRIBE`、`EXPLAIN`
-- **多数据库** — 一个进程同时支持 MySQL、PostgreSQL、Redis、MongoDB
-- **连接继承** — 定义基础连接，其他库继承 host/port/user/password
-- **环境变量插值** — 配置中使用 `${VAR}` 或 `${VAR:-默认值}`
-- **跨机器通用** — 一份配置文件，不同机器填不同值
-
-## 快速开始
-
-### 1. 安装构建
-
-```bash
-cd ~/code/js/db-mcp
-pnpm install
-pnpm build
-```
-
-### 2. 创建配置
-
-创建 `~/.config/db-mcp/config.yaml`（参考 `config.example.yaml`），填入实际连接信息。
-
-```bash
-chmod 600 ~/.config/db-mcp/config.yaml
-```
-
-### 3. 注册到 Claude Code
-
-在 `~/.claude/settings.json` 的 `mcpServers` 中添加：
-
-```json
-{
-  "db": {
-    "command": "node",
-    "args": ["/path/to/db-mcp/dist/index.js"]
-  }
-}
-```
-
-重启 Claude Code，用 `/mcp` 确认加载成功。
-
-## 安全机制
-
-- SQL 语句经 AST 解析验证，写操作被拦截
-- 分号注入（多语句）被拦截
-- Redis 仅允许只读命令
-- MongoDB 仅执行 `find` 查询
-- 表名/集合名经正则校验，防止注入
