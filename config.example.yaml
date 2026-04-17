@@ -31,7 +31,7 @@ projects:
         type: redis
         host: ${MYAPP_REDIS_HOST:-127.0.0.1}
         port: 6379
-      tg-order-pg:
+      order-pg:
         type: postgres
         host: ${MYAPP_PG_HOST:-127.0.0.1}
         port: 5432
