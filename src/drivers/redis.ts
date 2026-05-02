@@ -18,12 +18,38 @@ function getClient(key: string, config: ConnectionConfig): Redis {
 }
 
 const READ_COMMANDS = new Set([
-  "ping",
-  "get", "mget", "hget", "hgetall", "hmget", "hkeys", "hvals", "hlen",
-  "lrange", "llen", "lindex",
-  "scard", "smembers", "sismember",
-  "zrange", "zrangebyscore", "zcard", "zscore",
-  "keys", "type", "ttl", "pttl", "exists", "dbsize", "info", "scan",
+  // Connection / server / metadata
+  "ping", "echo", "command", "dbsize", "info", "lastsave", "role", "time",
+
+  // Generic key introspection
+  "dump", "exists", "expiretime", "keys", "object", "pexpiretime", "pttl", "randomkey",
+  "scan", "sort_ro", "touch", "ttl", "type",
+
+  // Strings / bitmaps
+  "bitcount", "bitpos", "get", "getbit", "getrange", "mget", "strlen", "substr",
+
+  // Hashes
+  "hexists", "hget", "hgetall", "hkeys", "hlen", "hmget", "hrandfield", "hscan", "hstrlen", "hvals",
+
+  // Lists
+  "lindex", "llen", "lpos", "lrange",
+
+  // Sets
+  "scard", "sdiff", "sinter", "sintercard", "sismember", "smembers", "smismember", "srandmember", "sscan", "sunion",
+
+  // Sorted sets
+  "zcard", "zcount", "zdiff", "zinter", "zintercard", "zlexcount", "zmscore", "zrandmember", "zrange",
+  "zrangebylex", "zrangebyscore", "zrank", "zrevrange", "zrevrangebylex", "zrevrangebyscore", "zrevrank",
+  "zscan", "zscore", "zunion",
+
+  // Streams
+  "xinfo", "xlen", "xrange", "xread", "xrevrange",
+
+  // Geospatial
+  "geodist", "geohash", "geopos", "georadius_ro", "georadiusbymember_ro", "geosearch",
+
+  // Pub/Sub introspection
+  "pubsub",
 ]);
 
 const WRITE_COMMANDS = new Set([
@@ -35,30 +61,66 @@ const WRITE_COMMANDS = new Set([
   "del", "unlink", "expire", "expireat", "pexpire", "persist", "rename",
 ]);
 
-// Always blocked — destructive operations
+// Always blocked — destructive operations that should not be exposed through this tool.
 const DANGEROUS_COMMANDS = new Set([
-  "flushdb", "flushall", "shutdown", "debug", "config", "slaveof", "replicaof",
+  "flushdb", "flushall", "shutdown", "debug", "slaveof", "replicaof",
 ]);
+
+const READ_ONLY_SUBCOMMANDS = new Map<string, Set<string>>([
+  ["acl", new Set(["cat", "getuser", "help", "list", "log", "users", "whoami"])],
+  ["client", new Set(["caching", "getname", "help", "id", "info", "list", "trackinginfo"])],
+  ["cluster", new Set([
+    "count-failure-reports", "countkeysinslot", "getkeysinslot", "help", "info", "keyslot", "links", "myid",
+    "myshardid", "nodes", "replicas", "shards", "slaves", "slots",
+  ])],
+  ["config", new Set(["get", "help"])],
+  ["function", new Set(["help", "list", "stats"])],
+  ["latency", new Set(["doctor", "graph", "help", "histogram", "history", "latest"])],
+  ["memory", new Set(["doctor", "help", "malloc-stats", "stats", "usage"])],
+  ["module", new Set(["help", "list"])],
+  ["script", new Set(["exists", "help"])],
+  ["sentinel", new Set([
+    "ckquorum", "get-master-addr-by-name", "help", "info-cache", "is-master-down-by-addr", "master",
+    "masters", "myid", "pending-scripts", "replicas", "sentinels", "slaves",
+  ])],
+  ["slowlog", new Set(["get", "help", "len"])],
+]);
+
+function requireReadOnlySubcommand(command: string, args: string[]): boolean {
+  const allowed = READ_ONLY_SUBCOMMANDS.get(command);
+  if (!allowed) {
+    return false;
+  }
+  const subcommand = args[0]?.toLowerCase();
+  if (!subcommand || !allowed.has(subcommand)) {
+    const allowedList = Array.from(allowed).sort().join(", ");
+    throw new Error(
+      `Redis command "${command.toUpperCase()} ${args[0] ?? ""}" is not allowed. Allowed read-only subcommands: ${allowedList}.`
+    );
+  }
+  return true;
+}
 
 export async function queryRedis(key: string, config: ConnectionConfig, command: string, args: string[]): Promise<QueryResult> {
   const cmd = command.toLowerCase();
+  const isReadOnlySubcommand = requireReadOnlySubcommand(cmd, args);
 
   if (DANGEROUS_COMMANDS.has(cmd)) {
     throw new Error(`Redis command "${command}" is always blocked (destructive).`);
   }
 
-  if (!config.allowWrite && !READ_COMMANDS.has(cmd)) {
+  if (!config.allowWrite && !READ_COMMANDS.has(cmd) && !isReadOnlySubcommand) {
     throw new Error(
       `Redis command "${command}" is not allowed in read-only mode. Set allowWrite: true in config to enable write commands.`
     );
   }
 
-  if (config.allowWrite && !READ_COMMANDS.has(cmd) && !WRITE_COMMANDS.has(cmd)) {
+  if (config.allowWrite && !READ_COMMANDS.has(cmd) && !WRITE_COMMANDS.has(cmd) && !isReadOnlySubcommand) {
     throw new Error(`Redis command "${command}" is not recognized. Check the command name.`);
   }
   const client = getClient(key, config);
   await client.connect().catch(() => {});
-  const result = await (client as any)[cmd](...args);
+  const result = await (client as any).call(cmd, ...args);
 
   if (result === null || result === undefined) {
     return { columns: ["value"], rows: [{ value: null }], rowCount: 1 };
