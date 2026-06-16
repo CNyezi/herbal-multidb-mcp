@@ -134,10 +134,14 @@ Environment variables are interpolated at load time:
 | INSERT / UPDATE / DELETE | **Blocked** | Allowed |
 | DROP / TRUNCATE | **Blocked** | **Still blocked** |
 | Multi-statement SQL (`;` injection) | **Blocked** | **Still blocked** |
+| File I/O (`INTO OUTFILE`/`DUMPFILE`, `LOAD_FILE`, `LOAD DATA`) | **Blocked** | **Still blocked** |
+| Unparseable SQL (fail-closed) | **Blocked** | **Blocked** |
 | Redis write commands (SET, DEL, etc.) | **Blocked** | **Blocked** |
 | MongoDB writes | **Blocked** | **Blocked** |
 
 Table/collection names are validated against `[a-zA-Z_][a-zA-Z0-9_]*` to prevent injection.
+
+The SQL guard is **fail-closed**: any query the parser cannot analyze is rejected rather than allowed through.
 
 ## Publishing
 

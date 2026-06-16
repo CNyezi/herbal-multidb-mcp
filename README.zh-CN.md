@@ -134,10 +134,14 @@ projects:
 | INSERT / UPDATE / DELETE | **禁止** | 允许 |
 | DROP / TRUNCATE | **禁止** | **仍然禁止** |
 | 多语句 SQL（`;` 注入） | **禁止** | **仍然禁止** |
+| 文件 I/O（`INTO OUTFILE`/`DUMPFILE`、`LOAD_FILE`、`LOAD DATA`） | **禁止** | **仍然禁止** |
+| 无法解析的 SQL（fail-closed） | **禁止** | **禁止** |
 | Redis 写命令（SET、DEL 等） | **禁止** | **禁止** |
 | MongoDB 写操作 | **禁止** | **禁止** |
 
 表名/集合名经正则校验 `[a-zA-Z_][a-zA-Z0-9_]*`，防止注入。
+
+SQL 护栏采用 **fail-closed**：解析器无法分析的查询一律拒绝，而不是放行。
 
 ## 发布
 

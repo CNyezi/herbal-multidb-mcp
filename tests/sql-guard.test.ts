@@ -94,4 +94,37 @@ describe("validateSql", () => {
     const result = validateSql("INSERT INTO users (name) VALUES ('a'); DROP TABLE users", true);
     expect(result.ok).toBe(false);
   });
+
+  // Security — fail-closed on parse failure (issue #1)
+  it("fail-closed: rejects an unparseable SELECT in read-only mode", () => {
+    // node-sql-parser cannot parse JSON_TABLE; must NOT fall through to allow.
+    const result = validateSql("SELECT JSON_TABLE(@x, '$[*]' COLUMNS(v INT PATH '$')) AS j");
+    expect(result.ok).toBe(false);
+  });
+
+  it("fail-closed: rejects an unparseable statement with allowWrite (could hide DROP/TRUNCATE)", () => {
+    const result = validateSql("TRUNCATE users PARTITION (p0)", true);
+    expect(result.ok).toBe(false);
+  });
+
+  // Security — block file I/O that parses as a plain SELECT
+  it("blocks SELECT ... INTO OUTFILE in read-only mode", () => {
+    expect(validateSql("SELECT * FROM users INTO OUTFILE '/tmp/pwn'").ok).toBe(false);
+  });
+
+  it("blocks SELECT ... INTO DUMPFILE in read-only mode", () => {
+    expect(validateSql("SELECT data FROM t INTO DUMPFILE '/tmp/pwn'").ok).toBe(false);
+  });
+
+  it("blocks load_file() in read-only mode", () => {
+    expect(validateSql("SELECT load_file('/etc/passwd')").ok).toBe(false);
+  });
+
+  it("blocks INTO OUTFILE even with allowWrite", () => {
+    expect(validateSql("SELECT * FROM users INTO OUTFILE '/tmp/pwn'", true).ok).toBe(false);
+  });
+
+  it("blocks LOAD DATA INFILE even with allowWrite", () => {
+    expect(validateSql("LOAD DATA INFILE '/tmp/x' INTO TABLE t", true).ok).toBe(false);
+  });
 });

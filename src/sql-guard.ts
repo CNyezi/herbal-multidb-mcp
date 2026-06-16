@@ -9,8 +9,11 @@ const ALLOWED_TYPES = new Set([
   "explain",
 ]);
 
-const SAFE_STATEMENT_RE = /^\s*(SELECT|SHOW|DESCRIBE|DESC|EXPLAIN)\b/i;
 const MULTI_STATEMENT_RE = /;\s*\S/;
+// Always-blocked file I/O: these parse as a normal "select"/write statement but read
+// or write arbitrary files on the DB host (SELECT ... INTO OUTFILE/DUMPFILE, load_file(),
+// LOAD DATA INFILE), so the statement-type allowlist alone would let them through.
+const FILE_IO_RE = /\b(INTO\s+(OUT|DUMP)FILE|LOAD_FILE|LOAD\s+DATA)\b/i;
 
 const DANGEROUS_TYPES = new Set(["drop", "truncate"]);
 
@@ -20,6 +23,11 @@ export function validateSql(sql: string, allowWrite = false): ValidationResult {
   // Always block multi-statement (injection risk)
   if (MULTI_STATEMENT_RE.test(sql)) {
     return { ok: false, reason: "Multi-statement SQL is not allowed" };
+  }
+
+  // Always block file I/O — parses as an ordinary statement but reads/writes host files
+  if (FILE_IO_RE.test(sql)) {
+    return { ok: false, reason: "File I/O (INTO OUTFILE/DUMPFILE, LOAD_FILE, LOAD DATA) is not allowed" };
   }
 
   // If allowWrite, only block DROP/TRUNCATE and multi-statement
@@ -34,7 +42,8 @@ export function validateSql(sql: string, allowWrite = false): ValidationResult {
         }
       }
     } catch {
-      // Can't parse — let it through if allowWrite (user takes responsibility)
+      // Fail-closed: an unparseable query could hide a DROP/TRUNCATE, so reject it.
+      return { ok: false, reason: "Could not parse SQL; rejected so DROP/TRUNCATE stay blocked." };
     }
     return { ok: true };
   }
@@ -55,9 +64,7 @@ export function validateSql(sql: string, allowWrite = false): ValidationResult {
     }
     return { ok: true };
   } catch {
-    if (SAFE_STATEMENT_RE.test(sql.trim())) {
-      return { ok: true };
-    }
+    // Fail-closed: cannot verify the statement type, so reject it.
     return { ok: false, reason: "Could not parse SQL. Only SELECT, SHOW, DESCRIBE, EXPLAIN are allowed." };
   }
 }
