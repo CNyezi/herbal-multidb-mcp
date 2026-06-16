@@ -118,6 +118,7 @@ projects:
         password: <密码或 ${环境变量}>
         description: "可选连接描述"
         allowWrite: false           # 默认 false — 设为 true 允许 INSERT/UPDATE/DELETE
+        tls: true                   # 仅 redis — 启用 TLS/传输加密（如 AWS ElastiCache）
         inherit: <其他连接名>        # 继承另一个连接的字段
 ```
 

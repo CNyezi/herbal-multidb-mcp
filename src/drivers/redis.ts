@@ -12,6 +12,7 @@ function getClient(key: string, config: ConnectionConfig): Redis {
       db: config.database ? parseInt(config.database, 10) : 0,
       connectTimeout: 5000,
       lazyConnect: true,
+      ...(config.tls ? { tls: {} } : {}),
     }));
   }
   return clients.get(key)!;

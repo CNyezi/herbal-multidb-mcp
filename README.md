@@ -118,6 +118,7 @@ projects:
         password: <password or ${ENV_VAR}>
         description: "Optional connection description"
         allowWrite: false           # default false — set true to allow INSERT/UPDATE/DELETE
+        tls: true                   # redis only — enable TLS/in-transit encryption (e.g. AWS ElastiCache)
         inherit: <other-connection> # inherit fields from another connection
 ```
 

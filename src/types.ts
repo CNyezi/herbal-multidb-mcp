@@ -11,6 +11,7 @@ export interface ConnectionConfig {
   description?: string;
   readonly?: boolean;
   allowWrite?: boolean; // default false — set true to allow INSERT/UPDATE/DELETE etc.
+  tls?: boolean; // enable TLS/in-transit encryption (e.g. AWS ElastiCache) — honored by redis
 }
 
 export interface ProjectConfig {

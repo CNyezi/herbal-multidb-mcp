@@ -31,6 +31,7 @@ projects:
         type: redis
         host: ${MYAPP_REDIS_HOST:-127.0.0.1}
         port: 6379
+        # tls: true   # enable for managed Redis with in-transit encryption (e.g. AWS ElastiCache)
       order-pg:
         type: postgres
         host: ${MYAPP_PG_HOST:-127.0.0.1}

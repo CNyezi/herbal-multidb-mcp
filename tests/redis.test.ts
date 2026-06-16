@@ -2,9 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConnectionConfig } from "../src/types.js";
 
 const calls: Array<[string, ...string[]]> = [];
+const ctorOpts: Array<Record<string, unknown>> = [];
 
 vi.mock("ioredis", () => ({
   Redis: class MockRedis {
+    constructor(opts: Record<string, unknown>) {
+      ctorOpts.push(opts);
+    }
     async connect() {}
     disconnect() {}
     async call(command: string, ...args: string[]) {
@@ -25,7 +29,18 @@ const readonlyRedis: ConnectionConfig = {
 describe("queryRedis read-only command guard", () => {
   beforeEach(async () => {
     calls.length = 0;
+    ctorOpts.length = 0;
     await closeRedisClients();
+  });
+
+  it("enables TLS when config.tls is true", async () => {
+    await queryRedis("test:redis-tls", { ...readonlyRedis, tls: true }, "PING", []);
+    expect(ctorOpts.at(-1)).toHaveProperty("tls");
+  });
+
+  it("omits TLS by default", async () => {
+    await queryRedis("test:redis-plain", readonlyRedis, "PING", []);
+    expect(ctorOpts.at(-1)?.tls).toBeUndefined();
   });
 
   it("allows CONFIG GET in read-only mode", async () => {
