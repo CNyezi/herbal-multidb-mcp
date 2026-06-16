@@ -1,6 +1,6 @@
 {
   "name": "herbal-multidb-mcp",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Multi-project database MCP server — MySQL, PostgreSQL, Redis, MongoDB with read-only protection",
   "type": "module",
   "main": "dist/index.js",
