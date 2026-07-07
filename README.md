@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/cnyezi-herbal-multidb-mcp-badge.png)](https://mseep.ai/app/cnyezi-herbal-multidb-mcp)
+
 # herbal-multidb-mcp
 
 [中文文档](./README.zh-CN.md)
