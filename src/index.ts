@@ -70,7 +70,7 @@ const server = new McpServer(
   { name: "herbal-multidb-mcp", version: "1.0.0" },
   {
     instructions: [
-      `Database MCP server (herbal-multidb-mcp) — read-only by default, supports MySQL, PostgreSQL, Redis, MongoDB.`,
+      `Database MCP server (herbal-multidb-mcp) — read-only by default, supports MySQL, PostgreSQL, ClickHouse, Redis, MongoDB.`,
       `Config file: ${configPath}`,
       ``,
       `Workflow: call list_projects first to see available projects and connections,`,
@@ -143,7 +143,7 @@ server.tool(
 // 3. query — connection + sql + optional project, validates SQL before executing
 server.tool(
   "query",
-  "Run a SQL query on a MySQL or PostgreSQL connection",
+  "Run a SQL query on a MySQL, PostgreSQL, or ClickHouse connection",
   {
     connection: z.string(),
     sql: z.string(),

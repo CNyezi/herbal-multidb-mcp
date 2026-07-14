@@ -2,7 +2,7 @@
 
 [中文文档](./README.zh-CN.md)
 
-A multi-project database MCP server. Provides read-only access to MySQL, PostgreSQL, Redis, and MongoDB through a single, unified interface.
+A multi-project database MCP server. Provides read-only access to MySQL, PostgreSQL, ClickHouse, Redis, and MongoDB through a single, unified interface.
 
 Works with any MCP-compatible client: Claude Code, Cursor, Windsurf, Cline, Continue, etc.
 
@@ -10,7 +10,8 @@ Works with any MCP-compatible client: Claude Code, Cursor, Windsurf, Cline, Cont
 
 - **Multi-project** — organize database connections by project; auto-selects when only one project is configured
 - **Read-only by default** — SQL validated via AST parsing; only `SELECT`/`SHOW`/`DESCRIBE`/`EXPLAIN` allowed. Set `allowWrite: true` per connection to enable writes (DROP/TRUNCATE always blocked)
-- **Multi-database** — MySQL, PostgreSQL, Redis, MongoDB in one server process
+- **Multi-database** — MySQL, PostgreSQL, ClickHouse, Redis, MongoDB in one server process
+- **TLS/SSL support** — MySQL, PostgreSQL, ClickHouse, and Redis all support `tls: true` for managed/cloud databases; verified by default, with an explicit `tlsRejectUnauthorized: false` opt-out
 - **Connection inheritance** — define a base connection and inherit host/port/user/password for other databases
 - **Environment variable interpolation** — use `${VAR}` or `${VAR:-default}` in config
 - **Cross-machine portable** — one config file, different values per machine
@@ -21,7 +22,7 @@ Works with any MCP-compatible client: Claude Code, Cursor, Windsurf, Cline, Cont
 |------|------------|
 | `list_projects` | List all projects and their connections |
 | `list_connections` | List connections for a project |
-| `query` | Execute SQL (MySQL / PostgreSQL) |
+| `query` | Execute SQL (MySQL / PostgreSQL / ClickHouse) |
 | `list_tables` | List tables or collections |
 | `describe_table` | Show table schema |
 | `redis_query` | Execute Redis commands |
@@ -110,16 +111,17 @@ projects:
     description: "Optional description"
     connections:
       <connection-name>:
-        type: mysql | postgres | redis | mongo
+        type: mysql | postgres | clickhouse | redis | mongo
         host: <hostname or IP>
         port: <port number>
         database: <database name>
         user: <username>
         password: <password or ${ENV_VAR}>
         description: "Optional connection description"
-        allowWrite: false           # default false — set true to allow INSERT/UPDATE/DELETE
-        tls: true                   # redis only — enable TLS/in-transit encryption (e.g. AWS ElastiCache)
-        inherit: <other-connection> # inherit fields from another connection
+        allowWrite: false             # default false — set true to allow INSERT/UPDATE/DELETE
+        tls: true                     # mysql/postgres/clickhouse/redis — enable TLS/in-transit encryption (e.g. AWS RDS, ElastiCache)
+        tlsRejectUnauthorized: false  # default true (verified) — set false to skip cert verification
+        inherit: <other-connection>   # inherit fields from another connection
 ```
 
 Environment variables are interpolated at load time:

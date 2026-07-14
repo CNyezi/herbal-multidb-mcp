@@ -1,7 +1,7 @@
 {
   "name": "herbal-multidb-mcp",
   "version": "0.1.7",
-  "description": "Multi-project database MCP server — MySQL, PostgreSQL, Redis, MongoDB with read-only protection",
+  "description": "Multi-project database MCP server — MySQL, PostgreSQL, ClickHouse, Redis, MongoDB with read-only protection",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -26,6 +26,7 @@
     "database",
     "mysql",
     "postgresql",
+    "clickhouse",
     "redis",
     "mongodb",
     "claude",
@@ -40,6 +41,7 @@
   },
   "packageManager": "pnpm@10.28.0",
   "dependencies": {
+    "@clickhouse/client": "^1.23.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "ioredis": "^5.10.1",
     "minimatch": "^10.2.5",

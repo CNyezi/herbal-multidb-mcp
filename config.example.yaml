@@ -39,3 +39,13 @@ projects:
         database: tg_order
         user: readonly
         password: ${MYAPP_PG_PASS}
+        # tls: true                    # enable for managed Postgres requiring SSL (e.g. AWS RDS)
+        # tlsRejectUnauthorized: false  # only if the CA chain isn't trusted locally — verified by default
+      events-ch:
+        type: clickhouse
+        host: ${MYAPP_CH_HOST:-127.0.0.1}
+        port: 8123
+        database: events
+        user: readonly
+        password: ${MYAPP_CH_PASS}
+        # tls: true   # use https (port 8443 typically) for managed ClickHouse

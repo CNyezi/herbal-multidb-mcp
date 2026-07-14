@@ -3,6 +3,7 @@ import { queryMysql, listTablesMysql, describeTableMysql, closeMysqlPools } from
 import { queryPostgres, listTablesPostgres, describeTablePostgres, closePostgresPools } from "./drivers/postgres.js";
 import { queryRedis, closeRedisClients } from "./drivers/redis.js";
 import { queryMongo, listCollectionsMongo, closeMongoClients } from "./drivers/mongo.js";
+import { queryClickHouse, listTablesClickHouse, describeTableClickHouse, closeClickHousePools } from "./drivers/clickhouse.js";
 
 export async function execQuery(poolKey: string, config: ConnectionConfig, sql: string): Promise<QueryResult> {
   switch (config.type) {
@@ -10,6 +11,8 @@ export async function execQuery(poolKey: string, config: ConnectionConfig, sql: 
       return queryMysql(poolKey, config, sql);
     case "postgres":
       return queryPostgres(poolKey, config, sql);
+    case "clickhouse":
+      return queryClickHouse(poolKey, config, sql);
     default:
       throw new Error(`Use query tool for SQL databases. For ${config.type}, use the dedicated tools.`);
   }
@@ -21,6 +24,8 @@ export async function execListTables(poolKey: string, config: ConnectionConfig):
       return listTablesMysql(poolKey, config);
     case "postgres":
       return listTablesPostgres(poolKey, config);
+    case "clickhouse":
+      return listTablesClickHouse(poolKey, config);
     case "mongo":
       return listCollectionsMongo(poolKey, config);
     default:
@@ -34,6 +39,8 @@ export async function execDescribeTable(poolKey: string, config: ConnectionConfi
       return describeTableMysql(poolKey, config, table);
     case "postgres":
       return describeTablePostgres(poolKey, config, table);
+    case "clickhouse":
+      return describeTableClickHouse(poolKey, config, table);
     default:
       throw new Error(`describe_table not supported for ${config.type}`);
   }
@@ -49,5 +56,6 @@ export async function closeAll(): Promise<void> {
     closePostgresPools(),
     closeRedisClients(),
     closeMongoClients(),
+    closeClickHousePools(),
   ]);
 }

@@ -1,4 +1,4 @@
-export type DbType = "mysql" | "postgres" | "redis" | "mongo";
+export type DbType = "mysql" | "postgres" | "redis" | "mongo" | "clickhouse";
 
 export interface ConnectionConfig {
   type: DbType;
@@ -11,7 +11,8 @@ export interface ConnectionConfig {
   description?: string;
   readonly?: boolean;
   allowWrite?: boolean; // default false — set true to allow INSERT/UPDATE/DELETE etc.
-  tls?: boolean; // enable TLS/in-transit encryption (e.g. AWS ElastiCache) — honored by redis
+  tls?: boolean; // enable TLS/in-transit encryption — honored by mysql, postgres, redis, clickhouse
+  tlsRejectUnauthorized?: boolean; // default true (verified); set false to skip cert verification (e.g. managed DBs without a usable CA chain)
 }
 
 export interface ProjectConfig {

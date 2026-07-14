@@ -11,6 +11,7 @@ function getPool(key: string, config: ConnectionConfig): mysql.Pool {
       database: config.database,
       user: config.user,
       password: config.password,
+      ssl: config.tls ? { rejectUnauthorized: config.tlsRejectUnauthorized ?? true } : undefined,
       connectionLimit: 3,
       connectTimeout: 5000,
     }));

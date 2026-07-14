@@ -2,7 +2,7 @@
 
 [English](./README.md)
 
-多项目数据库 MCP 服务器。通过统一接口提供 MySQL、PostgreSQL、Redis、MongoDB 的访问，默认只读保护。
+多项目数据库 MCP 服务器。通过统一接口提供 MySQL、PostgreSQL、ClickHouse、Redis、MongoDB 的访问，默认只读保护。
 
 适用于所有支持 MCP 协议的客户端：Claude Code、Cursor、Windsurf、Cline、Continue 等。
 
@@ -10,7 +10,8 @@
 
 - **多项目管理** — 按项目组织数据库连接；仅一个项目时自动选中
 - **默认只读** — 通过 AST 解析验证 SQL，仅允许 `SELECT`/`SHOW`/`DESCRIBE`/`EXPLAIN`。可按连接设置 `allowWrite: true` 开启写操作（DROP/TRUNCATE 始终禁止）
-- **多数据库** — 一个进程同时支持 MySQL、PostgreSQL、Redis、MongoDB
+- **多数据库** — 一个进程同时支持 MySQL、PostgreSQL、ClickHouse、Redis、MongoDB
+- **TLS/SSL 支持** — MySQL、PostgreSQL、ClickHouse、Redis 均支持 `tls: true`，默认校验证书，需要跳过校验时显式设置 `tlsRejectUnauthorized: false`
 - **连接继承** — 定义基础连接，其他库继承 host/port/user/password
 - **环境变量插值** — 配置中使用 `${VAR}` 或 `${VAR:-默认值}`
 - **跨机器通用** — 一份配置文件，不同机器填不同值
@@ -21,7 +22,7 @@
 |------|------|
 | `list_projects` | 列出所有项目及其连接 |
 | `list_connections` | 列出某项目的连接 |
-| `query` | 执行 SQL（MySQL / PostgreSQL） |
+| `query` | 执行 SQL（MySQL / PostgreSQL / ClickHouse） |
 | `list_tables` | 列出表或集合 |
 | `describe_table` | 查看表结构 |
 | `redis_query` | 执行 Redis 命令 |
@@ -110,16 +111,17 @@ projects:
     description: "可选描述"
     connections:
       <连接名>:
-        type: mysql | postgres | redis | mongo
+        type: mysql | postgres | clickhouse | redis | mongo
         host: <主机名或 IP>
         port: <端口>
         database: <数据库名>
         user: <用户名>
         password: <密码或 ${环境变量}>
         description: "可选连接描述"
-        allowWrite: false           # 默认 false — 设为 true 允许 INSERT/UPDATE/DELETE
-        tls: true                   # 仅 redis — 启用 TLS/传输加密（如 AWS ElastiCache）
-        inherit: <其他连接名>        # 继承另一个连接的字段
+        allowWrite: false             # 默认 false — 设为 true 允许 INSERT/UPDATE/DELETE
+        tls: true                     # mysql/postgres/clickhouse/redis — 启用 TLS/传输加密（如 AWS RDS、ElastiCache）
+        tlsRejectUnauthorized: false  # 默认 true（校验证书）— 设为 false 跳过证书校验
+        inherit: <其他连接名>          # 继承另一个连接的字段
 ```
 
 环境变量在加载时插值：
